@@ -30,6 +30,16 @@ The algebraic form of $H(s)$ allows us to extract the filter's crucial operation
 | **Bandwidth ($BW$)** | $BW = R/L$ | $R, L$ | Defines the width of the band passed by the filter. |
 | **Quality Factor ($Q$)** | $Q = \omega_0 / BW = \frac{1}{R} \sqrt{\frac{L}{C}}$ | $R, L, C$ | **Selectivity:** Determines the sharpness (or steepness) of the filter's response curve. |
 
+### Laplace vs. Fourier: Why $H(s)$ over $H(j\omega)$?
+
+Both the Laplace and Fourier transforms move circuit analysis from the time domain to the frequency domain, but the Laplace transform is the superior tool for design because of its broader applicability:
+
+* **Fourier Transform (FT):** Deals with the **steady-state** behaviour of a circuit. It uses the imaginary variable $j\omega$ (where $\omega = 2\pi f$), which represents continuous sinusoidal oscillation. The FT is ideal for analysing continuous, stable signals. When we plot a Bode plot, we are applying the FT to the Laplace Transfer Function by setting $s=j\omega$.
+* **Laplace Transform (LT):** Uses the complex variable $s = \sigma + j\omega$, where $\sigma$ is the **damping coefficient**.
+    * **Handles Transients and Instability:** The inclusion of the real term ($\sigma$) allows the LT to model exponentially decaying or growing signals. This is essential for analysing the **transient response** (how a circuit starts up or reacts to a pulse) and dealing with **unstable systems**.
+    * **Initial Conditions:** Crucially, the LT naturally incorporates the **initial conditions** (initial current in an inductor, initial voltage on a capacitor) directly into the algebraic equations. This is vital for accurate real-world analysis, which the standard FT cannot achieve.
+    * **Stability Analysis:** By defining the poles and zeros in the complex $s$-plane, the LT is the primary tool used by engineers to determine a system's stability, which is paramount in control theory and filter design.
+
 ---
 
 ## 2. Experimental Setup and Scenario Testing
@@ -67,17 +77,17 @@ The Python programme uses the **SciPy** library to calculate the smooth Laplace 
 
 ## 4. The Synergy: Laplace Complements LTSpice
 
-While both Laplace and LTSpice analyse circuits, they serve distinct, complementary purposes in the engineering workflow.
+The two techniques are highly complementary:
 
 | Tool | Purpose | Strength | Limitation |
 | :--- | :--- | :--- | :--- |
-| **Laplace/SymPy/SciPy** | **Analysis & Design** | Provides the **analytical solution** (a formula). Instantly reveals parameter dependencies ($Q \propto 1/R$). | Assumes ideal components; ignores non-linear effects, noise, and component tolerances. |
-| **LTSpice Simulation** | **Verification & Refinement** | Simulates the circuit using complex numerical models (e.g., SPICE), accounting for non-linear effects, parasitics, and device models. | Provides a **numerical approximation** (a set of data points). Requires careful configuration (resolution, solver settings) to avoid errors. |
+| **Laplace/SymPy/SciPy** | **Design & System Analysis** | Provides the **analytical solution** (a formula). Instantly reveals parameter dependencies ($Q \propto 1/R$) and system stability (via pole location). | Assumes ideal components; ignores non-linear effects, noise, and component tolerances. |
+| **LTSpice Simulation** | **Verification & Refinement** | Simulates the circuit using complex numerical models (e.g., SPICE), accounting for non-linear effects, parasitics, and component models. | Provides a **numerical approximation** (a set of data points). Requires careful configuration (resolution, solver settings) to avoid errors. |
 
 **Why the Synergy is Essential:**
-1.  **Validation:** The Laplace model gives the **ground truth** (what the circuit *should* do). LTSpice confirms if the model is correct *and* how non-ideal effects might alter the behaviour.
-2.  **Debugging:** As demonstrated by the $2\pi$ error and the high-Q offset, simulation requires careful configuration. The analytical result provides a benchmark to spot errors in the simulation setup or data extraction process.
-3.  **Efficiency:** Engineers use the Laplace model to quickly design and tune the core parameters (like $f_0$ and $Q$) and then use the simulator for final, detailed verification.
+1.  **Validation:** The Laplace model gives the **ground truth** (what the ideal circuit *should* do). LTSpice confirms if the model is correct *and* how non-ideal effects might alter the behaviour.
+2.  **Debugging:** As demonstrated by the $2\pi$ error and the high-Q offset, simulation requires careful configuration. The analytical result provides a crucial benchmark to spot errors in the simulation setup or data extraction process.
+3.  **Efficiency:** Engineers use the faster Laplace model to quickly design and tune the core parameters (like $f_0$ and $Q$) and then use the simulator for final, detailed verification under realistic conditions.
 
 ---
 
